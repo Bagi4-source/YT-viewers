@@ -14,12 +14,19 @@ class Viewer:
     def __init__(self, video_url, cookies, headers, r_url, proxy):
         self.__video_url = video_url
         self.__cookies = cookies
-        self.__headers = headers
-        self.__r_url = r_url
+        self.__headers = self.__get_headers(headers)
+        self.__r_url = r_url.replace('muted=1', 'muted=0')
         # self.__proxy = self.__get_proxy(proxy)
         proxy = proxy.split(":")
         self.__proxy = f"http://{proxy[2]}:{proxy[3]}@{proxy[0]}:{proxy[1]}"
         self.timeout = 30
+
+    def __get_headers(self, headers):
+        result = {}
+        for header, value in headers.items():
+            if "sec-" not in header and "cookie" != header:
+                result[header] = value
+        return result
 
     def __get_proxy(self, proxy):
         proxy_url = ""
@@ -77,7 +84,7 @@ if __name__ == '__main__':
 
         while True:
             print('start')
-            coroutines = [viewer.watch() for viewer in viewers]
+            coroutines = [viewer.watch() for viewer in viewers[:5]]
             loop.run_until_complete(asyncio.gather(*coroutines))
             loop.run_until_complete(asyncio.sleep(40))
 
